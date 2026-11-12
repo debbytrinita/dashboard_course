@@ -108,9 +108,12 @@ with tab1:
                         text=cq["churn"].map("{:.1%}".format),
                         title="Churn rate per kuartal pendaftaran",
                         color_discrete_sequence=["#eb6834"])
-        fig_q.update_traces(textposition="top center")
-        fig_q.update_yaxes(tickformat=".0%", title="Churn rate", rangemode="tozero")
-        st.plotly_chart(fig_q.update_layout(height=300, template="plotly_white", xaxis_title=""),
+        fig_q.update_traces(textposition="top center", cliponaxis=False)
+        fig_q.update_yaxes(tickformat=".0%", title="Churn rate",
+                           range=[0, max(0.5, cq["churn"].max() * 1.25)])  # ruang untuk label di atas titik
+        fig_q.update_xaxes(tickangle=-45)
+        st.plotly_chart(fig_q.update_layout(height=300, template="plotly_white", xaxis_title="",
+                                            margin=dict(t=60, b=40)),
                         width="stretch")
   
 with tab2: 
