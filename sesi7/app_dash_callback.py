@@ -72,6 +72,11 @@ app.layout = html.Div(style={"maxWidth": "1200px", "margin": "auto", "fontFamily
                          style_header={"fontWeight": "bold", "background": "#E9EDF5"},
                          style_data_conditional=[{"if": {"filter_query": "{status} = 'Churn'"},
                                                   "backgroundColor": "#FBE9EA"}]),
+    html.Div(style={"margin": "12px 0 32px"}, children=[
+        html.Button("⬇️ Unduh tabel (CSV)", id="btn-unduh", n_clicks=0),
+        html.Span(id="info-unduh", style={"color": "#666", "marginLeft": "10px"}),
+        dcc.Download(id="download-tabel"),
+    ]),
 ])
 
 
@@ -184,6 +189,20 @@ def detail_pelanggan(click):
              ("Jumlah keluhan", r.num_complaints), ("Status", r.status)]
     return [html.H4("Detail pelanggan", style={"marginTop": 0})] + \
            [html.Div([html.B(f"{k}: "), str(v)]) for k, v in baris]
+
+
+# 7) Export: unduh isi tabel persis seperti yang sedang tampil (filter sidebar + klik bar/seleksi scatter
+#    + urutan kolom yang diklik user). derived_virtual_data = seluruh baris (bukan hanya halaman aktif).
+@callback(Output("download-tabel", "data"), Output("info-unduh", "children"),
+          Input("btn-unduh", "n_clicks"),
+          State("tbl", "derived_virtual_data"), State("tbl", "data"), prevent_initial_call=True)
+def unduh_tabel(n, tampil, data):
+    rows = tampil if tampil is not None else data
+    if not rows:
+        return no_update, "Tidak ada data untuk diunduh."
+    out = pd.DataFrame(rows, columns=TABEL_COLS)
+    return dcc.send_data_frame(out.to_csv, "churn_tabel_terfilter.csv", index=False), \
+        f"{len(out):,} baris diunduh."
 
 
 if __name__ == "__main__":
